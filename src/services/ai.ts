@@ -40,7 +40,7 @@ async function buildFunctionHeaders() {
 
 export async function generateItinerary(trip: Trip): Promise<AIItineraryResponse> {
   const headers = await buildFunctionHeaders();
-  const url = `${FUNCTION_BASE_URL}/generatetrip`;
+  const url = `${FUNCTION_BASE_URL}/generateTrip`;
 
   console.log('DEBUG: Calling generateItinerary with:', {
     url,
@@ -97,7 +97,7 @@ export async function generatePackingList(trip: Trip, options?: {
 
   const headers = await buildFunctionHeaders();
 
-  const response = await fetch(`${FUNCTION_BASE_URL}/generatepackinglist`, {
+  const response = await fetch(`${FUNCTION_BASE_URL}/generatePackingList`, {
     method: 'POST',
     headers,
     body: JSON.stringify(request),
@@ -121,7 +121,7 @@ export async function getRecommendations(
 ): Promise<AIRecommendationsResponse> {
   const headers = await buildFunctionHeaders();
 
-  const response = await fetch(`${FUNCTION_BASE_URL}/getrecommendations`, {
+  const response = await fetch(`${FUNCTION_BASE_URL}/getRecommendations`, {
     method: 'POST',
     headers,
     body: JSON.stringify({
@@ -145,7 +145,7 @@ export async function getRecommendations(
 export async function summariseNotes(text: string): Promise<string> {
   const headers = await buildFunctionHeaders();
 
-  const response = await fetch(`${FUNCTION_BASE_URL}/summarisenotes`, {
+  const response = await fetch(`${FUNCTION_BASE_URL}/summariseNotes`, {
     method: 'POST',
     headers,
     body: JSON.stringify({ text }),

@@ -133,9 +133,20 @@ export async function getActivitiesByDayId(dayId: string) {
 }
 
 export async function createActivity(activity: Omit<Activity, 'id' | 'created_at' | 'updated_at'>) {
+  // Some deployments/schema versions used `day_id` instead of `trip_day_id`.
+  // To be resilient, include both fields when inserting so the insert
+  // succeeds regardless of which column name exists in the DB.
+  const payload: Record<string, unknown> = { ...activity };
+  if (activity.trip_day_id && payload['day_id'] === undefined) {
+    payload['day_id'] = activity.trip_day_id;
+  }
+  if ((activity as any).day_id && payload['trip_day_id'] === undefined) {
+    payload['trip_day_id'] = (activity as any).day_id;
+  }
+
   const { data, error } = await supabase
     .from('activities')
-    .insert(activity)
+    .insert(payload)
     .select()
     .single();
 
@@ -144,9 +155,18 @@ export async function createActivity(activity: Omit<Activity, 'id' | 'created_at
 }
 
 export async function updateActivity(activityId: string, updates: Partial<Activity>) {
+  // Mirror the same resilience for updates in case the DB column is `day_id`.
+  const payload: Record<string, unknown> = { ...updates };
+  if ((updates as any).trip_day_id && payload['day_id'] === undefined) {
+    payload['day_id'] = (updates as any).trip_day_id;
+  }
+  if ((updates as any).day_id && payload['trip_day_id'] === undefined) {
+    payload['trip_day_id'] = (updates as any).day_id;
+  }
+
   const { data, error } = await supabase
     .from('activities')
-    .update(updates)
+    .update(payload)
     .eq('id', activityId)
     .select()
     .single();

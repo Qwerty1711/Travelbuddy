@@ -49,7 +49,11 @@ export async function createTrip(trip: Omit<Trip, 'id' | 'created_at' | 'updated
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    console.error('Error creating trip', error);
+    throw error;
+  }
+
   return data as Trip;
 }
 

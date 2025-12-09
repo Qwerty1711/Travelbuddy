@@ -71,6 +71,7 @@ export interface Document {
   storage_path: string;
   mime_type: string;
   file_size: number;
+  uploader_id: string;
   uploaded_at: string;
 }
 
@@ -78,7 +79,7 @@ export interface PackingItem {
   id: string;
   trip_id: string;
   category: string;
-  name: string;
+  item_name: string;
   quantity: number;
   note: string;
   packed: boolean;
@@ -131,15 +132,57 @@ export interface AIItineraryResponse {
   days: AIItineraryDay[];
 }
 
+// ==================== PACKING LIST TYPES ====================
+/**
+ * Request payload for generatePackingList Edge Function
+ * Contains all trip context needed to generate AI packing recommendations
+ */
+export interface GeneratePackingListRequest {
+  destination: string;
+  startDate: string; // ISO 8601 format (YYYY-MM-DD)
+  endDate: string; // ISO 8601 format (YYYY-MM-DD)
+  tripType: TripType; // 'vacation' | 'business' | 'mixed'
+  vibe: TripVibe; // 'relaxed' | 'adventurous' | 'luxury' | 'budget' | 'family'
+  numTravelers: number;
+  hasChildren: boolean; // whether traveling with kids
+  hasElders: boolean; // whether traveling with elderly
+  climate?: string; // optional: e.g., "tropical", "cold", "temperate"
+  activities?: string[]; // optional: specific activities planned
+}
+
+/**
+ * Individual packing item with priority and optional notes
+ */
 export interface AIPackingItem {
   name: string;
   quantity: number;
+  priority: 'essential' | 'important' | 'optional';
   note?: string;
 }
 
+/**
+ * Response from generatePackingList Edge Function
+ * Organized by category with AI-ranked items by priority
+ */
 export interface AIPackingListResponse {
   categories: {
     [category: string]: AIPackingItem[];
+  };
+  tripDuration: number; // number of days
+  summary: string; // brief summary of recommendations
+}
+
+/**
+ * Legacy interface - kept for backward compatibility
+ * Use AIPackingItem and AIPackingListResponse instead
+ */
+export interface AIPackingListResponseLegacy {
+  categories: {
+    [category: string]: Array<{
+      name: string;
+      quantity: number;
+      note?: string;
+    }>;
   };
 }
 

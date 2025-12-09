@@ -4,6 +4,7 @@ import type {
   AIItineraryResponse,
   AIPackingListResponse,
   AIRecommendationsResponse,
+  GeneratePackingListRequest,
 } from '../types';
 
 // Base URL for Supabase Edge Functions
@@ -75,20 +76,31 @@ export async function generateItinerary(trip: Trip): Promise<AIItineraryResponse
 
 // ----------------- Packing List (generatepackinglist) -----------------
 
-export async function generatePackingList(trip: Trip): Promise<AIPackingListResponse> {
+export async function generatePackingList(trip: Trip, options?: {
+  hasChildren?: boolean;
+  hasElders?: boolean;
+  climate?: string;
+  activities?: string[];
+}): Promise<AIPackingListResponse> {
+  const request: GeneratePackingListRequest = {
+    destination: trip.destination,
+    startDate: trip.start_date,
+    endDate: trip.end_date,
+    tripType: trip.trip_type,
+    vibe: trip.vibe,
+    numTravelers: trip.num_travelers,
+    hasChildren: options?.hasChildren ?? false,
+    hasElders: options?.hasElders ?? false,
+    climate: options?.climate,
+    activities: options?.activities,
+  };
+
   const headers = await buildFunctionHeaders();
 
   const response = await fetch(`${FUNCTION_BASE_URL}/generatepackinglist`, {
     method: 'POST',
     headers,
-    body: JSON.stringify({
-      destination: trip.destination,
-      startDate: trip.start_date,
-      endDate: trip.end_date,
-      tripType: trip.trip_type,
-      vibe: trip.vibe,
-      numTravelers: trip.num_travelers,
-    }),
+    body: JSON.stringify(request),
   });
 
   if (!response.ok) {

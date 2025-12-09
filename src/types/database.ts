@@ -82,6 +82,7 @@ export type Database = {
           storage_path: string;
           mime_type: string;
           file_size: number;
+          uploader_id: string;
           uploaded_at: string;
         };
         Insert: Omit<Database['public']['Tables']['documents']['Row'], 'id' | 'uploaded_at'>;
@@ -92,7 +93,7 @@ export type Database = {
           id: string;
           trip_id: string;
           category: string;
-          name: string;
+          item_name: string;
           quantity: number;
           note: string;
           packed: boolean;

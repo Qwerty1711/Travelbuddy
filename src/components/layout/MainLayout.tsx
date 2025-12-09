@@ -20,53 +20,71 @@ export function MainLayout({ children }: MainLayoutProps) {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
-        <div className="p-6 border-b border-gray-200">
-          <Link to="/trips" className="flex items-center">
-            <Plane className="w-8 h-8 text-blue-600 mr-3" />
-            <span className="text-xl font-bold text-gray-900">Travel Buddy</span>
+    <div className="flex h-screen bg-neutral-50">
+      {/* Sidebar */}
+      <aside className="w-64 bg-white border-r border-neutral-200 flex flex-col shadow-sm">
+        {/* Logo */}
+        <div className="p-6 border-b border-neutral-200">
+          <Link to="/trips" className="flex items-center group">
+            <div className="p-2 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg mr-3 group-hover:shadow-glow-md transition-shadow">
+              <Plane className="w-5 h-5 text-white" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-lg font-display font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
+                TravelBuddy
+              </span>
+              <span className="text-xs text-neutral-500 font-medium">Adventures Await</span>
+            </div>
           </Link>
         </div>
 
-        <nav className="flex-1 p-4 space-y-2">
+        {/* Navigation */}
+        <nav className="flex-1 p-4 space-y-1">
           <Link
             to="/trips"
-            className={`flex items-center px-4 py-3 rounded-lg transition-colors ${
+            className={`flex items-center px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
               isActive('/trips')
-                ? 'bg-blue-50 text-blue-700'
-                : 'text-gray-700 hover:bg-gray-100'
+                ? 'bg-gradient-to-r from-primary-100 to-secondary-100 text-primary-700 shadow-sm'
+                : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'
             }`}
           >
-            <Map className="w-5 h-5 mr-3" />
-            <span className="font-medium">My Trips</span>
+            <Map className="w-5 h-5 mr-3 flex-shrink-0" />
+            <span>My Trips</span>
+            {isActive('/trips') && (
+              <div className="ml-auto w-2 h-2 rounded-full bg-primary-600"></div>
+            )}
           </Link>
 
           <Link
             to="/profile"
-            className={`flex items-center px-4 py-3 rounded-lg transition-colors ${
+            className={`flex items-center px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
               isActive('/profile')
-                ? 'bg-blue-50 text-blue-700'
-                : 'text-gray-700 hover:bg-gray-100'
+                ? 'bg-gradient-to-r from-primary-100 to-secondary-100 text-primary-700 shadow-sm'
+                : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'
             }`}
           >
-            <User className="w-5 h-5 mr-3" />
-            <span className="font-medium">Profile</span>
+            <User className="w-5 h-5 mr-3 flex-shrink-0" />
+            <span>Profile</span>
+            {isActive('/profile') && (
+              <div className="ml-auto w-2 h-2 rounded-full bg-primary-600"></div>
+            )}
           </Link>
         </nav>
 
-        <div className="p-4 border-t border-gray-200">
+        {/* Sign Out */}
+        <div className="p-4 border-t border-neutral-200">
           <button
             onClick={handleSignOut}
-            className="flex items-center w-full px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+            className="flex items-center w-full px-4 py-3 text-neutral-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 font-medium group"
           >
-            <LogOut className="w-5 h-5 mr-3" />
-            <span className="font-medium">Sign Out</span>
+            <LogOut className="w-5 h-5 mr-3 flex-shrink-0 group-hover:scale-110 transition-transform" />
+            <span>Sign Out</span>
           </button>
         </div>
       </aside>
 
-      <main className="flex-1 overflow-auto">
+      {/* Main Content */}
+      <main className="flex-1 overflow-auto bg-gradient-subtle">
         {children}
       </main>
     </div>

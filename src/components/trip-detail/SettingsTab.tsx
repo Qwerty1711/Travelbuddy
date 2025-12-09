@@ -83,7 +83,7 @@ export function SettingsTab({ trip, onTripUpdated }: SettingsTabProps) {
                 />
                 <button
                   onClick={handleCopyLink}
-                  className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                  className="btn-primary inline-flex items-center"
                 >
                   <Copy className="w-4 h-4 mr-2" />
                   {copied ? 'Copied!' : 'Copy'}
@@ -97,7 +97,7 @@ export function SettingsTab({ trip, onTripUpdated }: SettingsTabProps) {
             <button
               onClick={handleGenerateShareLink}
               disabled={loadingShare}
-              className="flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors"
+              className="btn-primary inline-flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <LinkIcon className="w-5 h-5 mr-2" />
               {loadingShare ? 'Generating...' : 'Generate Share Link'}

@@ -58,7 +58,8 @@ export function BudgetTab({ trip }: BudgetTabProps) {
       setShowAddForm(false);
     } catch (error) {
       console.error('Error adding expense:', error);
-      alert('Failed to add expense. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      alert(`Failed to add expense: ${errorMessage}`);
     }
   }
 
@@ -80,153 +81,208 @@ export function BudgetTab({ trip }: BudgetTabProps) {
     return acc;
   }, {} as Record<string, number>);
 
-  const categoryColors = {
-    transport: 'bg-blue-100 text-blue-700',
-    accommodation: 'bg-purple-100 text-purple-700',
-    food: 'bg-green-100 text-green-700',
-    activities: 'bg-yellow-100 text-yellow-700',
-    other: 'bg-gray-100 text-gray-700',
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="spinner"></div>
       </div>
     );
   }
 
   return (
-    <div className="p-8">
+    <div className="p-8 bg-gradient-subtle min-h-screen">
+      {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <div className="flex items-center justify-between mb-2">
-            <h4 className="text-sm font-medium text-gray-600">Total Spent</h4>
-            <DollarSign className="w-5 h-5 text-gray-400" />
+        {/* Total Spent */}
+        <div className="card-elevated">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-sm font-semibold text-neutral-600 uppercase tracking-wide">Total Spent</h4>
+            <div className="p-2 bg-primary-100 rounded-lg">
+              <DollarSign className="w-5 h-5 text-primary-600" />
+            </div>
           </div>
-          <p className="text-3xl font-bold text-gray-900">${totalSpent.toFixed(2)}</p>
+          <p className="text-4xl font-display font-bold text-neutral-900 mb-1">
+            ${totalSpent.toFixed(2)}
+          </p>
+          <p className="text-xs text-neutral-500">{expenses.length} transactions</p>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <div className="flex items-center justify-between mb-2">
-            <h4 className="text-sm font-medium text-gray-600">Transactions</h4>
-            <TrendingUp className="w-5 h-5 text-gray-400" />
+        {/* Transaction Count */}
+        <div className="card-elevated">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-sm font-semibold text-neutral-600 uppercase tracking-wide">Transactions</h4>
+            <div className="p-2 bg-secondary-100 rounded-lg">
+              <TrendingUp className="w-5 h-5 text-secondary-600" />
+            </div>
           </div>
-          <p className="text-3xl font-bold text-gray-900">{expenses.length}</p>
+          <p className="text-4xl font-display font-bold text-neutral-900 mb-1">
+            {expenses.length}
+          </p>
+          <p className="text-xs text-neutral-500">Tracked expenses</p>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <div className="flex items-center justify-between mb-2">
-            <h4 className="text-sm font-medium text-gray-600">Average per Day</h4>
-            <DollarSign className="w-5 h-5 text-gray-400" />
+        {/* Average per Day */}
+        <div className="card-elevated">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-sm font-semibold text-neutral-600 uppercase tracking-wide">Avg/Day</h4>
+            <div className="p-2 bg-accent-100 rounded-lg">
+              <DollarSign className="w-5 h-5 text-accent-600" />
+            </div>
           </div>
-          <p className="text-3xl font-bold text-gray-900">
+          <p className="text-4xl font-display font-bold text-neutral-900 mb-1">
             ${expenses.length > 0 ? (totalSpent / expenses.length).toFixed(2) : '0.00'}
           </p>
+          <p className="text-xs text-neutral-500">Per transaction</p>
         </div>
       </div>
 
-      <div className="mb-8 bg-white border border-gray-200 rounded-lg p-6">
-        <h4 className="text-lg font-semibold text-gray-900 mb-4">Spending by Category</h4>
-        <div className="space-y-3">
-          {Object.entries(categoryTotals).map(([category, total]) => {
-            const percentage = (total / totalSpent) * 100;
-            return (
-              <div key={category}>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-medium text-gray-700 capitalize">{category}</span>
-                  <span className="text-sm text-gray-600">${total.toFixed(2)}</span>
+      {/* Spending by Category */}
+      <div className="card-elevated mb-8">
+        <h4 className="text-lg font-display font-bold text-neutral-900 mb-6">Spending by Category</h4>
+        <div className="space-y-5">
+          {totalSpent === 0 ? (
+            <p className="text-center text-neutral-500 py-8">No spending data yet</p>
+          ) : (
+            Object.entries(categoryTotals).map(([category, total]) => {
+              const percentage = (total / totalSpent) * 100;
+              const categoryColors = {
+                transport: { bg: 'bg-blue-100', bar: 'bg-blue-500', text: 'text-blue-700' },
+                accommodation: { bg: 'bg-purple-100', bar: 'bg-purple-500', text: 'text-purple-700' },
+                food: { bg: 'bg-green-100', bar: 'bg-green-500', text: 'text-green-700' },
+                activities: { bg: 'bg-yellow-100', bar: 'bg-yellow-500', text: 'text-yellow-700' },
+                other: { bg: 'bg-neutral-100', bar: 'bg-neutral-500', text: 'text-neutral-700' },
+              };
+              const colors = categoryColors[category as keyof typeof categoryColors] || categoryColors.other;
+              
+              return (
+                <div key={category}>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-lg ${colors.bg}`}>
+                        <span className={`text-sm font-bold ${colors.text}`}>
+                          {category.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-neutral-900 capitalize">{category}</p>
+                        <p className="text-xs text-neutral-500">${total.toFixed(2)}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-bold text-neutral-900">{percentage.toFixed(0)}%</p>
+                    </div>
+                  </div>
+                  <div className="w-full bg-neutral-200 rounded-full h-3 overflow-hidden">
+                    <div
+                      className={`${colors.bar} h-3 rounded-full transition-all duration-500 ease-out`}
+                      style={{ width: `${percentage}%` }}
+                    ></div>
+                  </div>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${percentage}%` }}
-                  ></div>
-                </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
       </div>
 
+      {/* Add Expense Form */}
       {showAddForm && (
-        <div className="mb-6 bg-white border border-gray-200 rounded-lg p-6">
-          <h4 className="text-lg font-semibold text-gray-900 mb-4">Add Expense</h4>
-          <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="card-elevated mb-8 animate-slide-up">
+          <div className="flex items-center justify-between mb-6 pb-4 border-b border-neutral-200">
+            <h4 className="text-lg font-display font-bold text-neutral-900">Add Expense</h4>
+            <button
+              onClick={() => setShowAddForm(false)}
+              className="text-neutral-400 hover:text-neutral-600 transition-colors"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 mb-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+              <label className="block text-sm font-semibold text-neutral-700 mb-2">Date</label>
               <input
                 type="date"
                 value={newExpense.date}
                 onChange={(e) => setNewExpense({ ...newExpense, date: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                className="input-field"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+              <label className="block text-sm font-semibold text-neutral-700 mb-2">Category</label>
               <select
                 value={newExpense.category}
                 onChange={(e) => setNewExpense({ ...newExpense, category: e.target.value as ExpenseCategory })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                className="input-field"
               >
-                <option value="transport">Transport</option>
-                <option value="accommodation">Accommodation</option>
-                <option value="food">Food</option>
-                <option value="activities">Activities</option>
-                <option value="other">Other</option>
+                <option value="transport">✈️ Transport</option>
+                <option value="accommodation">🏨 Accommodation</option>
+                <option value="food">🍽️ Food</option>
+                <option value="activities">🎭 Activities</option>
+                <option value="other">📦 Other</option>
               </select>
             </div>
           </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+
+          <div className="mb-6">
+            <label className="block text-sm font-semibold text-neutral-700 mb-2">Description</label>
             <input
               type="text"
               value={newExpense.description}
               onChange={(e) => setNewExpense({ ...newExpense, description: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+              className="input-field"
               placeholder="e.g., Taxi to airport"
             />
           </div>
-          <div className="grid grid-cols-2 gap-4 mb-4">
+
+          <div className="grid grid-cols-2 gap-4 mb-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+              <label className="block text-sm font-semibold text-neutral-700 mb-2">Amount</label>
               <input
                 type="number"
                 step="0.01"
-                value={newExpense.amount}
-                onChange={(e) => setNewExpense({ ...newExpense, amount: parseFloat(e.target.value) })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                value={isNaN(newExpense.amount) || newExpense.amount === 0 ? "" : newExpense.amount}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setNewExpense({
+                    ...newExpense,
+                    amount: val === "" ? 0 : parseFloat(val)
+                  });
+                }}
+                className="input-field"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Currency</label>
+              <label className="block text-sm font-semibold text-neutral-700 mb-2">Currency</label>
               <input
                 type="text"
                 value={newExpense.currency}
                 onChange={(e) => setNewExpense({ ...newExpense, currency: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                className="input-field"
               />
             </div>
           </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Note (Optional)</label>
+
+          <div className="mb-6">
+            <label className="block text-sm font-semibold text-neutral-700 mb-2">Note (Optional)</label>
             <textarea
               value={newExpense.note}
               onChange={(e) => setNewExpense({ ...newExpense, note: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+              className="input-field resize-none"
               rows={2}
             />
           </div>
+
           <div className="flex gap-3">
             <button
               onClick={handleAddExpense}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+              className="flex-1 btn-primary"
             >
               Add Expense
             </button>
             <button
               onClick={() => setShowAddForm(false)}
-              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-sm"
+              className="flex-1 btn-outline"
             >
               Cancel
             </button>
@@ -234,64 +290,64 @@ export function BudgetTab({ trip }: BudgetTabProps) {
         </div>
       )}
 
+      {/* Add Expense Button */}
       {!showAddForm && (
         <button
           onClick={() => setShowAddForm(true)}
-          className="mb-6 w-full flex items-center justify-center px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-blue-500 hover:text-blue-600 transition-colors"
+          className="w-full mb-8 flex items-center justify-center px-6 py-4 border-2 border-dashed border-neutral-300 rounded-xl text-neutral-600 hover:border-primary-500 hover:text-primary-600 hover:bg-primary-50 transition-all font-semibold group"
         >
-          <Plus className="w-5 h-5 mr-2" />
+          <Plus className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
           Add Expense
         </button>
       )}
 
+      {/* Expenses Table */}
       {expenses.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
-          No expenses recorded yet. Add your first expense above.
+        <div className="empty-state">
+          <div className="empty-state-icon">
+            <DollarSign className="w-full h-full" />
+          </div>
+          <h3 className="text-xl font-display font-bold text-neutral-900 mb-2">
+            No expenses recorded
+          </h3>
+          <p className="text-neutral-600 mb-6">
+            Start adding expenses to track your budget
+          </p>
         </div>
       ) : (
-        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <div className="card-elevated overflow-hidden">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-neutral-50 border-b border-neutral-200">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Date
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Description
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Category
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Amount
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">Date</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">Description</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">Category</th>
+                <th className="px-6 py-4 text-right text-xs font-semibold text-neutral-600 uppercase tracking-wider">Amount</th>
+                <th className="px-6 py-4 text-right text-xs font-semibold text-neutral-600 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-neutral-200">
               {expenses.map((expense) => (
-                <tr key={expense.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <tr key={expense.id} className="hover:bg-neutral-50 transition-colors">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-neutral-900">
                     {new Date(expense.date).toLocaleDateString()}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-900">
-                    <div>{expense.description}</div>
-                    {expense.note && <div className="text-gray-500 text-xs">{expense.note}</div>}
+                  <td className="px-6 py-4 text-sm">
+                    <div className="font-medium text-neutral-900">{expense.description}</div>
+                    {expense.note && <div className="text-neutral-500 text-xs mt-1">{expense.note}</div>}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs font-medium rounded capitalize ${categoryColors[expense.category]}`}>
+                    <span className="badge badge-primary text-xs capitalize">
                       {expense.category}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-neutral-900 text-right">
                     {expense.currency} ${expense.amount.toFixed(2)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right">
                     <button
                       onClick={() => handleDelete(expense.id)}
-                      className="text-gray-400 hover:text-red-600"
+                      className="btn-icon text-neutral-400 hover:text-red-600 hover:bg-red-50 transition-all"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>

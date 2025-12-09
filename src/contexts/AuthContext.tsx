@@ -39,13 +39,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+const signUp = async (email: string, password: string) => {
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+  });
+
+  if (error) {
     return { error };
+  }
+
+  // Supabase behaviour:
+  // If email confirmation is ON → user exists but session is null
+  const needsConfirmation = !!data.user && !data.session;
+
+  return {
+    user: data.user,
+    session: data.session,
+    needsConfirmation,
+    error: null,
   };
+};  
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({

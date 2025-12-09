@@ -6,10 +6,12 @@ import type {
   GeneratePackingListRequest,
 } from '../types';
 
+// ✅ Correct base URL for Supabase Edge Functions
+// Final URL will be: https://<project-ref>.supabase.co/functions/v1/<function-name>
 const EDGE_FUNCTION_BASE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
 
 export async function generateItinerary(trip: Trip): Promise<AIItineraryResponse> {
-  const response = await fetch(`${EDGE_FUNCTION_BASE_URL}/generateTrip`, {
+  const response = await fetch(`${EDGE_FUNCTION_BASE_URL}/generatetrip`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
@@ -53,7 +55,7 @@ export async function generatePackingList(trip: Trip, options?: {
     activities: options?.activities,
   };
 
-  const response = await fetch(`${EDGE_FUNCTION_BASE_URL}/generatePackingList`, {
+  const response = await fetch(`${EDGE_FUNCTION_BASE_URL}/generatepackinglist`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
@@ -73,7 +75,7 @@ export async function getRecommendations(
   destination: string,
   interests: string[]
 ): Promise<AIRecommendationsResponse> {
-  const response = await fetch(`${EDGE_FUNCTION_BASE_URL}/getRecommendations`, {
+  const response = await fetch(`${EDGE_FUNCTION_BASE_URL}/getrecommendations`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
@@ -93,7 +95,7 @@ export async function getRecommendations(
 }
 
 export async function summariseNotes(text: string): Promise<string> {
-  const response = await fetch(`${EDGE_FUNCTION_BASE_URL}/summariseNotes`, {
+  const response = await fetch(`${EDGE_FUNCTION_BASE_URL}/summarisenotes`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,

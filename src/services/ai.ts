@@ -1,9 +1,9 @@
-import { supabase } from '../lib/supabase';
 import type {
   Trip,
   AIItineraryResponse,
   AIPackingListResponse,
   AIRecommendationsResponse,
+  GeneratePackingListRequest,
 } from '../types';
 
 const EDGE_FUNCTION_BASE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
@@ -34,21 +34,32 @@ export async function generateItinerary(trip: Trip): Promise<AIItineraryResponse
   return await response.json();
 }
 
-export async function generatePackingList(trip: Trip): Promise<AIPackingListResponse> {
+export async function generatePackingList(trip: Trip, options?: {
+  hasChildren?: boolean;
+  hasElders?: boolean;
+  climate?: string;
+  activities?: string[];
+}): Promise<AIPackingListResponse> {
+  const request: GeneratePackingListRequest = {
+    destination: trip.destination,
+    startDate: trip.start_date,
+    endDate: trip.end_date,
+    tripType: trip.trip_type,
+    vibe: trip.vibe,
+    numTravelers: trip.num_travelers,
+    hasChildren: options?.hasChildren ?? false,
+    hasElders: options?.hasElders ?? false,
+    climate: options?.climate,
+    activities: options?.activities,
+  };
+
   const response = await fetch(`${EDGE_FUNCTION_BASE_URL}/generatePackingList`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      destination: trip.destination,
-      startDate: trip.start_date,
-      endDate: trip.end_date,
-      tripType: trip.trip_type,
-      vibe: trip.vibe,
-      numTravelers: trip.num_travelers,
-    }),
+    body: JSON.stringify(request),
   });
 
   if (!response.ok) {

@@ -16,7 +16,7 @@ export async function uploadDocument(
   tripId: string,
   file: File
 ): Promise<Document> {
-  const fileExt = file.name.split('.').pop();
+  const fileExt = file.name.split('.').pop() || 'bin';
   const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
   const storagePath = `${tripId}/${fileName}`;
 
@@ -26,6 +26,11 @@ export async function uploadDocument(
 
   if (uploadError) throw uploadError;
 
+  // Get current user ID
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) throw new Error('User not authenticated');
+
   const { data, error } = await supabase
     .from('documents')
     .insert({
@@ -34,7 +39,8 @@ export async function uploadDocument(
       storage_path: storagePath,
       mime_type: file.type,
       file_size: file.size,
-    })
+      uploader_id: user.id,
+    } as any)
     .select()
     .single();
 
